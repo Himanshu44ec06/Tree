@@ -4,16 +4,13 @@ function  Tree(){
 
     function Node(data){
         this._data = data; // key 
-        this._guid = this._gGuid();
+        this._guid = _gGuid();
         this._parent = null;
         this._children = [];
         this._otherData = {
-            _keyValue  : '',
-            _mappedId : '',
-            _function : {
-                _nameFunction : '',
-                _expectedInput : []
-            }
+            _type  : '',
+            _mappedId : null,
+            _function : null
         }
 
         function _gGuid() {
@@ -36,6 +33,7 @@ function  Tree(){
             else  
                throw 'Tree already have root'
         }
+        return _node._guid;
     }
 
     this.findBFS = function(data){
@@ -52,13 +50,79 @@ function  Tree(){
         return null;
     }
 
+    this.addDataToNode = function(node,mappedId,functionData){
+        var _queue = [this._root];
+        var  _found =  false;
+        while(_queue.length){
+            var _thisNode  = _queue.shift();
+            
+            if(_thisNode._guid === node){ 
+                _found =  true;
+                if(mappedId)
+                    _thisNode._otherData._mappedId = mappedId;
+                if(functionData)
+                    _thisNode._otherData._function  = functionData;
+            } 
+            
+            for(var i=0;i<_thisNode._children.length;i++){
+                _queue.push(_thisNode._children[i]);
+            }
+            return  _found;
+        } 
+    }
+
 }
 
 function ResponseTree(){
+    this.ConvertToTree = function(data){
+        if(Array.isArray(data))
+            throw 'Array  is  not Supported'
 
-    this._tree = null;
+        var _tree = new Tree();
+        var _root = _tree.add(''); //  intiating tree
+        _childrenDataToTree(data,_tree,_root);
+        return _tree;
+     
+    }
+    this.ConvertToJson = function(tree){
+        var  _jsonObject  = _childrenDataToJson(tree._root._children);
+        return  _jsonObject;
+    }
 
-    
+
+    function _childrenDataToJson(data){
+        var  _jsonObject = {};
+       
+        while(data.length){
+            var _item  =  data.shift();
+            _jsonObject[_item._data.key] =  _item._children.length > 0? _childrenDataToJson(_item._children) :  _item._data.data;
+        }
+        return  _jsonObject;
+    }
+
+    function  _childrenDataToTree(data,_tree,_parent) {
+            
+        var _queue = Object.keys(data);
+        while(_queue.length){
+            var _key  = _queue.shift();
+                if(!Array.isArray(data[_key])){ //  currently  excluding array  type
+                    switch(typeof data[_key]){
+                        case 'object': 
+                          var _iParent =  _tree.add({key:_key,data:null},_parent);
+                          _childrenDataToTree(data[_key],_tree,_iParent);
+                        break;
+                        default : 
+                            _tree.add({key:_key,data : data[_key]},_parent);
+                        break;
+
+                    }
+                }
+        }
+    }
 
 
 }
+
+var _item  = new ResponseTree();
+var  tree =_item.ConvertToTree({a:1,b:2,c:{a:1}});
+console.log(_item.ConvertToJson(tree));
