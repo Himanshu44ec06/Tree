@@ -140,6 +140,7 @@ function ResponseTree(){
 
     function  _childrenDataToTree(data,_tree,_parent) {
             
+        if(data){
         var _queue = Object.keys(data);
         while(_queue.length){
             var _key  = _queue.shift();
@@ -155,6 +156,7 @@ function ResponseTree(){
 
                     }
                 }
+            }
         }
     }
 
@@ -175,7 +177,13 @@ var  tree =_item.ConvertToTree({
     headers  : {
       'Content-Type' : 'application/json',
       'client_secret' : 'abcd',
-      'client_id' : 'abcd'},response:{a:1,b:2,c:{a:1}}});
-console.log(JSON.stringify(tree));
+      'client_id' : 'abcd'},
+      response:{"Parameters":{"Username":"test","Password":"6YtPDiSsxxcfy73D36Ax7A==","EncryptionVector":"zMikLF9dA6de/q8j+PBE+g=="},"BaseUrl":"https://soti.net","AuthType":2,"HttpHeaderDetail":{"HttpHeaders":[{"Key":"test","Value":"test"}]},"HttpRequestPayloadDetail":null}
+      
+}
+      );
+
 var  json  =  _item.ConvertToJson(tree);
-console.log(_item.CompareJson({a:1,b:2,c:{a:1,b:2}},{a:1,b:2,c:{a:1,b:3}}));
+
+console.log(json);
+//console.log(_item.CompareJson({a:1,b:2,c:{a:1,b:2}},{a:1,b:2,c:{a:1,b:3}}));
