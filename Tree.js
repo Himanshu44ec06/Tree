@@ -6,6 +6,7 @@ function  Tree(){
         this._data = data; // key 
         this._guid = _gGuid();
         this._parent = null;
+        this._accessKey = null;
         this._children = [];
         this._otherData = {
             _type  : '',
@@ -26,6 +27,10 @@ function  Tree(){
         var _parent  =  toNodeData ? this.findBFS(toNodeData) :null;
         if(_parent) {
             _node._parent =  _parent._guid;
+            if(_parent._accessKey == null)
+              _node._accessKey =     _node._data.key;
+            else 
+                _node._accessKey = _parent._accessKey + "->" + _node._data.key ;
             _parent._children.push(_node);
         }else {
             if(!this._root)
@@ -84,6 +89,39 @@ function ResponseTree(){
         return _tree;
      
     }
+
+
+
+    this.CompareJson  = function(oldjson,newJson){
+       return _comparingArray(oldjson,newJson);
+
+    }
+
+
+    function _comparingArray (dataLeft,dataRight){
+        var _queue = Object.keys(dataLeft);
+        while(_queue.length){
+                var  _key  =  _queue.shift();
+                if(dataRight[_key] == undefined  ||  ((typeof  dataLeft[_key]) != (typeof dataRight[_key])) )
+                   return  false;
+                
+                if(!Array.isArray(dataLeft[_key])){
+                        switch(typeof  dataLeft[_key]) {
+                            case 'object': 
+                           var retunOut =  _comparingArray(dataLeft[_key],dataRight[_key]);
+                           if(!retunOut)
+                              return false;
+                          break;
+                                
+                        }
+                }
+                
+
+        }
+        return true;
+    }
+
+
     this.ConvertToJson = function(tree){
         var  _jsonObject  = _childrenDataToJson(tree._root._children);
         return  _jsonObject;
@@ -123,6 +161,21 @@ function ResponseTree(){
 
 }
 
+/*
+try{
+var json  =  JSON.parse('{"headers"{"Content-Type":"application/json","client_secret":"abcd","client_id":"abcd"},"response":{"a":1,"b":2,"c":{"a":1}}}'); }
+catch(ex){
+    console.log(ex.__proto__.name);
+}
+*/
+
+
 var _item  = new ResponseTree();
-var  tree =_item.ConvertToTree({a:1,b:2,c:{a:1}});
-console.log(_item.ConvertToJson(tree));
+var  tree =_item.ConvertToTree({
+    headers  : {
+      'Content-Type' : 'application/json',
+      'client_secret' : 'abcd',
+      'client_id' : 'abcd'},response:{a:1,b:2,c:{a:1}}});
+console.log(JSON.stringify(tree));
+var  json  =  _item.ConvertToJson(tree);
+console.log(_item.CompareJson({a:1,b:2,c:{a:1,b:2}},{a:1,b:2,c:{a:1,b:3}}));
